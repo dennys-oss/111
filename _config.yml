@@ -13,7 +13,7 @@ timezone: Asia/Shanghai
 # 网址与文章链接
 # 使用简洁的 :title/ 结构，便于日后迁移到动态网站
 # =====================================================
-url: https://your-domain.example.com
+url: https://dennys-oss.github.io/111/
 permalink: :title/
 new_post_name: :title.md
 default_layout: post
@@ -60,7 +60,7 @@ theme: plain
 # =====================================================
 deploy:
   type: git
-  repo: https://github.com/你的用户名/你的仓库名.git
+  repo: https://github.com/dennys-oss/111.git
   branch: gh-pages
   message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
 
