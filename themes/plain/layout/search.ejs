@@ -85,7 +85,7 @@ layout: layout
           : text.slice(0, 120);
         return {
           title: p.title,
-          url: '/' + (p.path || '').replace(/^\//, ''),
+          url: p.url || (p.path || '').replace(/^\//, ''),
           excerpt: excerpt
         };
       });

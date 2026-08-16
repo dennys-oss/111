@@ -52,9 +52,9 @@ function stripHtml(html) {
 
 const records = posts
   .map((post, i) => ({
-    objectID: post.path || 'post-' + i,
+    objectID: post.url || post.path || 'post-' + i,
     title: post.title || '',
-    url: '/' + (post.path || '').replace(/^\//, ''),
+    url: post.url || (post.path || '').replace(/^\//, ''),
     excerpt: stripHtml((post.content || '').slice(0, 300)),
     tags: Array.isArray(post.tags) ? post.tags : [],
     date: post.date || ''
@@ -79,8 +79,23 @@ async function request(subPath, init = {}) {
   return res.json();
 }
 
-// 先清空索引，再全量写入，保证与当前文章完全一致
-await request('/clear');
+async function waitTask(taskID) {
+  for (let i = 0; i < 40; i++) {
+    const r = await request('/task/' + taskID);
+    if (r.status === 'published') return;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error('等待 Algolia 清空任务超时');
+}
+
+// 先清空索引并等任务完成，再全量写入，保证与当前文章完全一致
+// 索引不存在（首次上传）时 404 属正常，直接跳过清空
+try {
+  const clearRes = await request('/clear');
+  await waitTask(clearRes.taskID);
+} catch (err) {
+  if (!String(err.message).includes('404')) throw err;
+}
 if (records.length) {
   await request('/batch', {
     method: 'POST',
