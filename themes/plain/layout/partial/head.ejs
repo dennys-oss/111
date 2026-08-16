@@ -1,0 +1,6 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= page.title ? page.title + ' | ' + theme.site_name : theme.site_name %></title>
+<meta name="description" content="<%= page.description || config.description %>">
+<link rel="alternate" type="application/atom+xml" title="<%= theme.site_name %>" href="<%- url_for('atom.xml') %>">
+<link rel="stylesheet" href="<%- url_for('/css/main.css') %>">

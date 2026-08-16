@@ -1,0 +1,42 @@
+# =====================================================
+# 博客主题配置（修改后重新生成网站生效）
+# =====================================================
+
+# 站点名称与简介
+site_name: 我的博客
+site_description: 记录生活与思考
+
+# 导航菜单
+menu:
+  首页: /
+  归档: /archives/
+  分类: /categories/
+  标签: /tags/
+  搜索: /search/
+  关于: /about/
+
+# ---------------- Giscus 评论 ----------------
+# 配置教程见项目根目录 README.md
+giscus:
+  enable: true
+  repo: ""            # 格式：用户名/仓库名，例如 hbr/blog-comments
+  repo_id: ""         # 仓库 ID（在 giscus.app 获取）
+  category: "Announcements"  # Discussions 分类名称
+  category_id: ""     # 分类 ID（在 giscus.app 获取）
+  mapping: "pathname"
+  reactions_enabled: "1"
+  emit_metadata: "0"
+  input_position: "top"
+  theme: "preferred_color_scheme"
+  lang: "zh-CN"
+  crossorigin: "anonymous"
+
+# ---------------- Algolia 搜索 ----------------
+# 配置教程见项目根目录 README.md
+# 注意：search_api_key 是 Search-Only Key，可以公开；
+# Admin API Key 只用于上传索引，不要写在这里。
+algolia:
+  enable: true
+  app_id: ""           # Application ID
+  search_api_key: ""   # Search-Only API Key
+  index_name: "posts"  # 索引名称

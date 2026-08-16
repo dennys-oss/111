@@ -1,0 +1,20 @@
+---
+layout: layout
+---
+<% if (page.category) { %>
+  <h1 class="page-title">分类：<%= page.category %></h1>
+  <% page.posts.each(function(post) { %>
+    <div class="archive-item">
+      <time datetime="<%= post.date.format('YYYY-MM-DD') %>"><%= post.date.format('YYYY-MM-DD') %></time>
+      <a href="<%- url_for(post.path) %>"><%= post.title %></a>
+    </div>
+  <% }) %>
+  <%- paginator({ prev_text: '← 上一页', next_text: '下一页 →' }) %>
+<% } else { %>
+  <h1 class="page-title">分类</h1>
+  <ul class="term-list">
+    <% site.categories.sort('name').each(function(cat) { %>
+      <li><a href="<%- url_for(cat.path) %>"><%= cat.name %></a>（<%= cat.posts.length %> 篇）</li>
+    <% }) %>
+  </ul>
+<% } %>

@@ -1,0 +1,30 @@
+{
+  "name": "my-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人博客：静态网站 + Giscus 评论 + Algolia 搜索",
+  "scripts": {
+    "new": "hexo new",
+    "server": "hexo server",
+    "generate": "hexo generate",
+    "deploy": "hexo deploy",
+    "algolia": "node tools/algolia-upload.mjs",
+    "algolia:all": "hexo generate && node tools/algolia-upload.mjs"
+  },
+  "dependencies": {
+    "hexo": "^7.3.0",
+    "hexo-deployer-git": "^4.0.0",
+    "hexo-generator-archive": "^2.0.0",
+    "hexo-generator-category": "^1.0.0",
+    "hexo-generator-feed": "^3.0.0",
+    "hexo-generator-index": "^4.0.0",
+    "hexo-generator-search": "^2.4.3",
+    "hexo-generator-tag": "^1.0.0",
+    "hexo-renderer-ejs": "^2.0.0",
+    "hexo-renderer-marked": "^6.3.0",
+    "hexo-server": "^3.0.0"
+  },
+  "hexo": {
+    "version": "7.3.0"
+  }
+}

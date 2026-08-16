@@ -1,0 +1,62 @@
+---
+layout: layout
+---
+<article class="page">
+  <h1 class="page-title">搜索</h1>
+  <p class="search-tip">输入关键词，实时搜索全站文章（由 Algolia 提供）。</p>
+  <input id="search-input" class="search-input" type="search" placeholder="输入关键词…" autocomplete="off">
+  <div id="search-results" class="search-results"></div>
+</article>
+
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.24.0/dist/algoliasearch.umd.min.js"></script>
+<script>
+  (function () {
+    var appId = <%- JSON.stringify(theme.algolia.app_id) %>;
+    var searchKey = <%- JSON.stringify(theme.algolia.search_api_key) %>;
+    var indexName = <%- JSON.stringify(theme.algolia.index_name) %>;
+    var results = document.getElementById('search-results');
+
+    if (!appId || !searchKey) {
+      results.innerHTML = '<p class="search-empty">搜索尚未配置：请在 themes/plain/_config.yml 中填写 Algolia 的 App ID 和 Search-Only API Key（教程见 README.md）。</p>';
+      return;
+    }
+
+    var client = algoliasearch(appId, searchKey);
+    var index = client.initIndex(indexName);
+    var input = document.getElementById('search-input');
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function render(hits) {
+      if (!hits.length) {
+        results.innerHTML = '<p class="search-empty">没有找到相关文章。</p>';
+        return;
+      }
+      var html = '';
+      hits.forEach(function (hit) {
+        html += '<div class="search-result">' +
+          '<h3><a href="' + hit.url + '">' + escapeHtml(hit.title) + '</a></h3>' +
+          '<p>' + escapeHtml(hit.excerpt || '') + '</p>' +
+          '</div>';
+      });
+      results.innerHTML = html;
+    }
+
+    input.addEventListener('input', function () {
+      var query = input.value.trim();
+      if (!query) {
+        results.innerHTML = '';
+        return;
+      }
+      index.search(query, { hitsPerPage: 10 }).then(function (res) {
+        render(res.hits);
+      }).catch(function () {
+        results.innerHTML = '<p class="search-empty">搜索出错，请稍后再试。</p>';
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,25 @@
+---
+layout: layout
+---
+<article class="post">
+  <h1 class="post-title"><%= page.title %></h1>
+  <div class="post-meta">
+    <time datetime="<%= page.date.format('YYYY-MM-DD') %>"><%= page.date.format('YYYY-MM-DD') %></time>
+    <% if (page.categories && page.categories.length) { %>
+      <span>
+        <% page.categories.each(function(cat) { %>
+          <a href="<%- url_for(cat.path) %>"><%= cat.name %></a>
+        <% }) %>
+      </span>
+    <% } %>
+  </div>
+  <div class="post-content"><%- page.content %></div>
+  <% if (page.tags && page.tags.length) { %>
+    <div class="post-tags">
+      <% page.tags.each(function(tag) { %>
+        <a href="<%- url_for(tag.path) %>">#<%= tag.name %></a>
+      <% }) %>
+    </div>
+  <% } %>
+  <%- partial('partial/giscus') %>
+</article>

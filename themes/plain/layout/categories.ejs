@@ -1,0 +1,9 @@
+---
+layout: layout
+---
+<h1 class="page-title">分类</h1>
+<ul class="term-list">
+  <% site.categories.sort('name').each(function(cat) { %>
+    <li><a href="<%- url_for(cat.path) %>"><%= cat.name %></a>（<%= cat.posts.length %> 篇）</li>
+  <% }) %>
+</ul>

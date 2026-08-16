@@ -1,0 +1,82 @@
+# =====================================================
+# 网站基本信息（改成你自己的）
+# =====================================================
+title: 我的博客
+subtitle: 记录生活与思考
+description: 一个用静态网站构建的个人博客
+keywords: [博客, 个人网站]
+author: 你的名字
+language: zh-CN
+timezone: Asia/Shanghai
+
+# =====================================================
+# 网址与文章链接
+# 使用简洁的 :title/ 结构，便于日后迁移到动态网站
+# =====================================================
+url: https://your-domain.example.com
+permalink: :title/
+new_post_name: :title.md
+default_layout: post
+auto_spacing: true
+titlecase: false
+external_link:
+  enable: true
+  field: site
+  exclude: ""
+
+# =====================================================
+# 目录
+# =====================================================
+source_dir: source
+public_dir: public
+tag_dir: tags
+archive_dir: archives
+category_dir: categories
+code_dir: downloads/code
+i18n_dir: :lang
+skip_render: []
+
+# =====================================================
+# 写作与代码高亮
+# =====================================================
+highlight:
+  enable: true
+  line_number: true
+  auto_detect: false
+  tab_replace: ""
+
+default_category: uncategorized
+category_map:
+tag_map:
+
+# =====================================================
+# 主题
+# =====================================================
+theme: plain
+
+# =====================================================
+# 部署（GitHub Pages）
+# 改成你自己的仓库地址后，运行 npm run deploy
+# =====================================================
+deploy:
+  type: git
+  repo: https://github.com/你的用户名/你的仓库名.git
+  branch: gh-pages
+  message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+
+# =====================================================
+# RSS 订阅（可选）
+# =====================================================
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+
+# =====================================================
+# 搜索索引（供 Algolia 上传使用，勿删）
+# =====================================================
+search:
+  path: search.json
+  field: post
+  content: true
+  format: html

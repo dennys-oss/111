@@ -1,0 +1,9 @@
+---
+layout: layout
+---
+<h1 class="page-title">标签</h1>
+<ul class="term-list">
+  <% site.tags.sort('name').each(function(tag) { %>
+    <li><a href="<%- url_for(tag.path) %>">#<%= tag.name %></a>（<%= tag.posts.length %> 篇）</li>
+  <% }) %>
+</ul>

@@ -1,0 +1,11 @@
+---
+layout: layout
+---
+<h1 class="page-title">归档</h1>
+<% page.posts.each(function(post) { %>
+  <div class="archive-item">
+    <time datetime="<%= post.date.format('YYYY-MM-DD') %>"><%= post.date.format('YYYY-MM-DD') %></time>
+    <a href="<%- url_for(post.path) %>"><%= post.title %></a>
+  </div>
+<% }) %>
+<%- paginator({ prev_text: '← 上一页', next_text: '下一页 →' }) %>

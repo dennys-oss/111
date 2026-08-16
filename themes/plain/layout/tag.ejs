@@ -1,0 +1,20 @@
+---
+layout: layout
+---
+<% if (page.tag) { %>
+  <h1 class="page-title">标签：#<%= page.tag %></h1>
+  <% page.posts.each(function(post) { %>
+    <div class="archive-item">
+      <time datetime="<%= post.date.format('YYYY-MM-DD') %>"><%= post.date.format('YYYY-MM-DD') %></time>
+      <a href="<%- url_for(post.path) %>"><%= post.title %></a>
+    </div>
+  <% }) %>
+  <%- paginator({ prev_text: '← 上一页', next_text: '下一页 →' }) %>
+<% } else { %>
+  <h1 class="page-title">标签</h1>
+  <ul class="term-list">
+    <% site.tags.sort('name').each(function(tag) { %>
+      <li><a href="<%- url_for(tag.path) %>">#<%= tag.name %></a>（<%= tag.posts.length %> 篇）</li>
+    <% }) %>
+  </ul>
+<% } %>
