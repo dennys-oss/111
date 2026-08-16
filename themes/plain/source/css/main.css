@@ -263,3 +263,14 @@ a:hover {
     flex-direction: column;
   }
 }
+
+/* 短页面时页脚固定在底部 */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.site-main {
+  flex: 1;
+}
