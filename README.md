@@ -5,6 +5,7 @@
 - **静态网站**：Hexo 构建，页面提前生成，速度快、免费托管、几乎零维护
 - **评论**：Giscus（基于 GitHub Discussions，无需自建数据库）
 - **搜索**：Algolia（实时全站搜索）
+- **SEO**：自动生成站点地图与 RSS 订阅
 - **可迁移**：内容全部是 Markdown，URL 使用简洁的 `:title/` 结构，以后想换动态网站（如 WordPress）成本很低
 
 ---
@@ -13,6 +14,7 @@
 
 ```
 blog/
+├── .github/workflows/      # GitHub Actions 自动部署（推送到 main 即发布）
 ├── _config.yml              # 网站主配置（标题、URL、部署等）
 ├── package.json             # 依赖与常用命令
 ├── scaffolds/               # 新建文章的模板
@@ -21,7 +23,9 @@ blog/
 │   ├── about/               # 关于页面
 │   ├── search/              # 搜索页面
 │   ├── categories/          # 分类页面
-│   └── tags/                # 标签页面
+│   ├── tags/                # 标签页面
+│   ├── 404.md               # 404 页面
+│   └── robots.txt           # 搜索引擎爬虫规则
 ├── themes/
 │   └── plain/               # 主题（含 Giscus 和 Algolia 配置）
 │       └── _config.yml      # 主题配置：菜单、Giscus、Algolia
@@ -125,11 +129,30 @@ npm run algolia
 
 完成后访问 `/search/` 页面，输入关键词即可实时搜索。
 
+> 如果使用下面的 GitHub Actions 自动部署，还可以在仓库 **Settings → Secrets and variables → Actions** 中添加 `ALGOLIA_APP_ID` 和 `ALGOLIA_ADMIN_API_KEY` 两个密钥，之后每次推送都会自动更新搜索索引，无需在本地手动上传。
+
 ---
 
 ## 五、发布上线
 
-### 方式一：GitHub Pages（推荐，免费）
+### 方式一：GitHub Actions 自动部署（推荐，免费，一劳永逸）
+
+项目已内置自动部署工作流（`.github/workflows/deploy.yml`）：每次推送到 `main` 分支，GitHub 会自动构建网站并发布到 GitHub Pages。
+
+1. 在 GitHub 新建一个仓库（例如 `你的用户名.github.io`），把项目推上去：
+
+```powershell
+git remote add origin https://github.com/你的用户名/你的用户名.github.io.git
+git branch -M main
+git push -u origin main
+```
+
+2. 打开仓库 **Settings → Pages**，将 Source 设置为 **GitHub Actions**。
+3. 等待首次构建完成（1–2 分钟），访问 `https://你的用户名.github.io`。
+
+之后每次 `git push` 都会自动更新网站，本地只需要写文章和推送。
+
+### 方式二：本地手动部署（备选）
 
 1. 在 GitHub 新建一个仓库，例如 `你的用户名.github.io`。
 2. 在 `_config.yml` 中修改 `deploy.repo` 为你的仓库地址。
@@ -144,7 +167,7 @@ npm run deploy
 
 几分钟后访问 `https://你的用户名.github.io`。
 
-### 方式二：Vercel / Netlify（免费）
+### 方式三：Vercel / Netlify（免费）
 
 导入仓库后，构建命令填 `hexo generate`，输出目录填 `public` 即可，之后每次 push 自动发布。
 
