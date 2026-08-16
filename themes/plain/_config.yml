@@ -37,6 +37,6 @@ giscus:
 # Admin API Key 只用于上传索引，不要写在这里。
 algolia:
   enable: true
-  app_id: ""           # Application ID
-  search_api_key: ""   # Search-Only API Key
+  app_id: "T7AP1X62E8"           # Application ID
+  search_api_key: "23b0e32e12049720abe036a618429f53"   # Search-Only API Key
   index_name: "posts"  # 索引名称
