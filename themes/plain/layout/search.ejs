@@ -3,27 +3,27 @@ layout: layout
 ---
 <article class="page">
   <h1 class="page-title">搜索</h1>
-  <p class="search-tip">输入关键词，实时搜索全站文章（由 Algolia 提供）。</p>
+  <p class="search-tip">输入关键词，实时搜索全站文章<% if (theme.algolia.app_id) { %>（由 Algolia 提供）<% } %>。</p>
   <input id="search-input" class="search-input" type="search" placeholder="输入关键词…" autocomplete="off">
   <div id="search-results" class="search-results"></div>
 </article>
 
+<% if (theme.algolia.app_id) { %>
 <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.24.0/dist/algoliasearch.umd.min.js"></script>
+<% } %>
 <script>
   (function () {
     var appId = <%- JSON.stringify(theme.algolia.app_id) %>;
     var searchKey = <%- JSON.stringify(theme.algolia.search_api_key) %>;
     var indexName = <%- JSON.stringify(theme.algolia.index_name) %>;
     var results = document.getElementById('search-results');
-
-    if (!appId || !searchKey) {
-      results.innerHTML = '<p class="search-empty">搜索尚未配置：请在 themes/plain/_config.yml 中填写 Algolia 的 App ID 和 Search-Only API Key（教程见 README.md）。</p>';
-      return;
-    }
-
-    var client = algoliasearch(appId, searchKey);
-    var index = client.initIndex(indexName);
     var input = document.getElementById('search-input');
+
+    function stripHtml(html) {
+      var div = document.createElement('div');
+      div.innerHTML = html || '';
+      return (div.textContent || '').replace(/\s+/g, ' ').trim();
+    }
 
     function escapeHtml(str) {
       var div = document.createElement('div');
@@ -46,17 +46,60 @@ layout: layout
       results.innerHTML = html;
     }
 
+    // ---------- Algolia 搜索（配置后自动启用） ----------
+    if (appId && searchKey) {
+      var client = algoliasearch(appId, searchKey);
+      var algoliaIndex = client.initIndex(indexName);
+      input.addEventListener('input', function () {
+        var query = input.value.trim();
+        if (!query) { results.innerHTML = ''; return; }
+        algoliaIndex.search(query, { hitsPerPage: 10 }).then(function (res) {
+          render(res.hits);
+        }).catch(function () {
+          results.innerHTML = '<p class="search-empty">搜索出错，请稍后再试。</p>';
+        });
+      });
+      return;
+    }
+
+    // ---------- 本地搜索回退（未配置 Algolia 时，直接搜索 search.json） ----------
+    var localData = null;
+    fetch('/search.json').then(function (res) { return res.json(); }).then(function (data) {
+      localData = data;
+      var query = input.value.trim();
+      if (query) searchLocal(query);
+    }).catch(function () {
+      results.innerHTML = '<p class="search-empty">搜索数据加载失败，请刷新重试。</p>';
+    });
+
+    function searchLocal(query) {
+      var q = query.toLowerCase();
+      var hits = localData.filter(function (p) {
+        return (p.title || '').toLowerCase().indexOf(q) !== -1 ||
+          stripHtml(p.content || '').toLowerCase().indexOf(q) !== -1;
+      }).slice(0, 10).map(function (p) {
+        var text = stripHtml(p.content || '');
+        var idx = text.toLowerCase().indexOf(q);
+        var excerpt = idx >= 0
+          ? '…' + text.slice(Math.max(0, idx - 20), idx + 100) + '…'
+          : text.slice(0, 120);
+        return {
+          title: p.title,
+          url: '/' + (p.path || '').replace(/^\//, ''),
+          excerpt: excerpt
+        };
+      });
+      render(hits);
+    }
+
     input.addEventListener('input', function () {
       var query = input.value.trim();
-      if (!query) {
-        results.innerHTML = '';
+      if (!query) { results.innerHTML = ''; return; }
+      if (!localData) {
+        results.innerHTML = '<p class="search-empty">正在加载搜索数据…</p>';
         return;
       }
-      index.search(query, { hitsPerPage: 10 }).then(function (res) {
-        render(res.hits);
-      }).catch(function () {
-        results.innerHTML = '<p class="search-empty">搜索出错，请稍后再试。</p>';
-      });
+      searchLocal(query);
     });
   })();
 </script>

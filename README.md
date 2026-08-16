@@ -93,6 +93,8 @@ giscus:
 
 ## 四、开启 Algolia 搜索
 
+> 提示：在配置 Algolia 之前，`/search/` 页面已经可以搜索（基于本地 `search.json` 的简易搜索）。完成下面的配置并上传索引后，会自动切换为 Algolia 的实时搜索。
+
 ### 1. 注册并建索引
 
 1. 到 [algolia.com](https://www.algolia.com/) 注册免费账号（Free 计划够用）。
