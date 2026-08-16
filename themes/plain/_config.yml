@@ -22,7 +22,7 @@ giscus:
   repo: "dennys-oss/111"            # 格式：用户名/仓库名，例如 hbr/blog-comments
   repo_id: "R_kgDOT6QJ0Q"         # 仓库 ID（在 giscus.app 获取）
   category: "Announcements"  # Discussions 分类名称
-  category_id: ""     # 分类 ID（在 giscus.app 获取）
+  category_id: "DIC_kwDOT6QJ0c4DDhH8"     # 分类 ID（在 giscus.app 获取）
   mapping: "pathname"
   reactions_enabled: "1"
   emit_metadata: "0"
