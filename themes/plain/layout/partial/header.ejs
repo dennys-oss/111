@@ -1,8 +1,16 @@
-<div class="header-inner">
+<div class="header-inner" id="site-header">
   <a class="site-title" href="<%- url_for('/') %>"><%= theme.site_name %></a>
-  <nav class="site-nav">
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="切换导航菜单">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <nav class="site-nav" id="site-nav">
+    <% var currentPath = (page.path || '').replace(/\/$/, '').replace(/^index\.html$/, ''); %>
     <% for (var name in theme.menu) { %>
-      <a href="<%- url_for(theme.menu[name]) %>"><%= name %></a>
+      <% var menuRaw = theme.menu[name].replace(/^\/|\/$/g, ''); %>
+      <% var isActive = menuRaw === '' ? currentPath === '' : (currentPath === menuRaw || currentPath.indexOf(menuRaw + '/') === 0); %>
+      <a class="<%= isActive ? 'active' : '' %>" href="<%- url_for(theme.menu[name]) %>"><%= name %></a>
     <% } %>
   </nav>
 </div>

@@ -2,22 +2,30 @@
 layout: layout
 ---
 <article class="post">
-  <h1 class="post-title"><%= page.title %></h1>
-  <div class="post-meta">
-    <time datetime="<%= page.date.format('YYYY-MM-DD') %>"><%= page.date.format('YYYY-MM-DD') %></time>
-    <% if (page.categories && page.categories.length) { %>
-      <span>
-        <% page.categories.each(function(cat) { %>
-          <a href="<%- url_for(cat.path) %>"><%= cat.name %></a>
-        <% }) %>
-      </span>
-    <% } %>
-  </div>
+  <header class="post-header">
+    <h1 class="post-title post-title--article"><%= page.title %></h1>
+    <div class="post-meta">
+      <time datetime="<%= page.date.format('YYYY-MM-DD') %>"><%= page.date.format('YYYY年MM月DD日') %></time>
+      <% if (page.updated && page.updated > page.date) { %>
+        <span title="最后更新">更新于 <%= page.updated.format('YYYY-MM-DD') %></span>
+      <% } %>
+      <% var plainText = page.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ''); %>
+      <% var minutes = Math.max(1, Math.ceil(plainText.length / 500)); %>
+      <span>约 <%= minutes %> 分钟阅读</span>
+      <% if (page.categories && page.categories.length) { %>
+        <span class="post-tags">
+          <% page.categories.each(function(cat) { %>
+            <a class="tag-chip" href="<%- url_for(cat.path) %>"><%= cat.name %></a>
+          <% }) %>
+        </span>
+      <% } %>
+    </div>
+  </header>
   <div class="post-content"><%- page.content %></div>
   <% if (page.tags && page.tags.length) { %>
     <div class="post-tags">
       <% page.tags.each(function(tag) { %>
-        <a href="<%- url_for(tag.path) %>">#<%= tag.name %></a>
+        <a class="tag-chip" href="<%- url_for(tag.path) %>">#<%= tag.name %></a>
       <% }) %>
     </div>
   <% } %>

@@ -4,102 +4,177 @@ layout: layout
 <article class="page">
   <h1 class="page-title">搜索</h1>
   <p class="search-tip">输入关键词，实时搜索全站文章<% if (theme.algolia.app_id) { %>（由 Algolia 提供）<% } %>。</p>
-  <input id="search-input" class="search-input" type="search" placeholder="输入关键词…" autocomplete="off">
-  <div id="search-results" class="search-results"></div>
+  <input id="search-input" class="search-input" type="search" placeholder="输入关键词…" autocomplete="off" aria-label="搜索关键词">
+  <div id="search-results" class="search-results" aria-live="polite"></div>
 </article>
 
 <% if (theme.algolia.app_id) { %>
 <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.24.0/dist/algoliasearch.umd.min.js"></script>
 <% } %>
 <script>
-  (function () {
-    var appId = <%- JSON.stringify(theme.algolia.app_id) %>;
-    var searchKey = <%- JSON.stringify(theme.algolia.search_api_key) %>;
-    var indexName = <%- JSON.stringify(theme.algolia.index_name) %>;
-    var results = document.getElementById('search-results');
-    var input = document.getElementById('search-input');
+(function () {
+  'use strict';
 
-    function stripHtml(html) {
-      var div = document.createElement('div');
-      div.innerHTML = html || '';
-      return (div.textContent || '').replace(/\s+/g, ' ').trim();
+  var appId = <%- JSON.stringify(theme.algolia.app_id) %>;
+  var searchKey = <%- JSON.stringify(theme.algolia.search_api_key) %>;
+  var indexName = <%- JSON.stringify(theme.algolia.index_name) %>;
+  var siteRoot = <%- JSON.stringify(url_for('/')) %>;
+  var useAlgolia = !!(appId && searchKey);
+
+  var input = document.getElementById('search-input');
+  var results = document.getElementById('search-results');
+  var currentDir = (location.pathname || '/').replace(/[^/]+/?$/, '');
+  var requestSeq = 0;
+  var debounceTimer = null;
+
+  function stripHtml(html) {
+    var div = document.createElement('div');
+    div.innerHTML = html || '';
+    return (div.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function resultHref(raw) {
+    if (!raw) return '#';
+    var path = raw;
+    try { path = new URL(raw, location.origin).pathname; } catch (e) {}
+    if (siteRoot && path.indexOf(siteRoot) === 0) {
+      path = path.slice(siteRoot.length);
     }
+    return currentDir + path.replace(/^\/+/, '');
+  }
 
-    function escapeHtml(str) {
-      var div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
+  function highlight(text, query) {
+    var html = escapeHtml(text || '');
+    var words = (query || '').split(/\s+/).filter(Boolean);
+    if (!words.length) return html;
+    var re = new RegExp('(' + words.map(escapeRegExp).join('|') + ')', 'ig');
+    return html.replace(re, '<mark>$1</mark>');
+  }
 
-    function render(hits) {
-      if (!hits.length) {
-        results.innerHTML = '<p class="search-empty">没有找到相关文章。</p>';
-        return;
-      }
-      var html = '';
+  function excerptOf(hit, query) {
+    if (hit.excerpt) return hit.excerpt;
+    var text = stripHtml(hit.content || '');
+    var q = (query || '').toLowerCase();
+    var idx = text.toLowerCase().indexOf(q);
+    return idx >= 0
+      ? '…' + text.slice(Math.max(0, idx - 20), idx + 100) + '…'
+      : text.slice(0, 120);
+  }
+
+  function render(hits, query) {
+    var html = '';
+    if (!hits.length) {
+      html = '<p class="search-empty">没有找到相关文章，换个关键词试试？</p>';
+    } else {
+      html = '<p class="search-count">共 ' + hits.length + ' 条结果</p>';
       hits.forEach(function (hit) {
-        html += '<div class="search-result">' +
-          '<h3><a href="' + hit.url + '">' + escapeHtml(hit.title) + '</a></h3>' +
-          '<p>' + escapeHtml(hit.excerpt || '') + '</p>' +
-          '</div>';
+        html += '<a class="search-result" href="' + resultHref(hit.url) + '">' +
+          '<h3>' + highlight(hit.title, query) + '</h3>' +
+          '<p>' + highlight(excerptOf(hit, query), query) + '</p>' +
+          '</a>';
       });
-      results.innerHTML = html;
     }
+    results.innerHTML = html;
+  }
 
-    // ---------- Algolia 搜索（配置后自动启用） ----------
-    if (appId && searchKey) {
-      var client = algoliasearch(appId, searchKey);
-      var algoliaIndex = client.initIndex(indexName);
-      input.addEventListener('input', function () {
-        var query = input.value.trim();
-        if (!query) { results.innerHTML = ''; return; }
-        algoliaIndex.search(query, { hitsPerPage: 10 }).then(function (res) {
-          render(res.hits);
-        }).catch(function () {
-          results.innerHTML = '<p class="search-empty">搜索出错，请稍后再试。</p>';
-        });
-      });
+  function doSearch(query) {
+    var seq = ++requestSeq;
+    if (!query) {
+      results.innerHTML = '';
       return;
     }
+    results.innerHTML = '<p class="search-empty">搜索中…</p>';
 
-    // ---------- 本地搜索回退（未配置 Algolia 时，直接搜索 search.json） ----------
-    var localData = null;
-    fetch('/search.json').then(function (res) { return res.json(); }).then(function (data) {
-      localData = data;
-      var query = input.value.trim();
-      if (query) searchLocal(query);
-    }).catch(function () {
-      results.innerHTML = '<p class="search-empty">搜索数据加载失败，请刷新重试。</p>';
-    });
-
-    function searchLocal(query) {
-      var q = query.toLowerCase();
-      var hits = localData.filter(function (p) {
-        return (p.title || '').toLowerCase().indexOf(q) !== -1 ||
-          stripHtml(p.content || '').toLowerCase().indexOf(q) !== -1;
-      }).slice(0, 10).map(function (p) {
-        var text = stripHtml(p.content || '');
-        var idx = text.toLowerCase().indexOf(q);
-        var excerpt = idx >= 0
-          ? '…' + text.slice(Math.max(0, idx - 20), idx + 100) + '…'
-          : text.slice(0, 120);
-        return {
-          title: p.title,
-          url: p.url || (p.path || '').replace(/^\//, ''),
-          excerpt: excerpt
-        };
+    if (useAlgolia) {
+      algoliaIndex.search(query, { hitsPerPage: 10 }).then(function (res) {
+        if (seq !== requestSeq) return;
+        render(res.hits, query);
+      }).catch(function () {
+        if (seq !== requestSeq) return;
+        results.innerHTML = '<p class="search-empty">搜索出错，请稍后再试。</p>';
       });
-      render(hits);
-    }
-
-    input.addEventListener('input', function () {
-      var query = input.value.trim();
-      if (!query) { results.innerHTML = ''; return; }
+    } else {
       if (!localData) {
         results.innerHTML = '<p class="search-empty">正在加载搜索数据…</p>';
         return;
       }
-      searchLocal(query);
+      var q = query.toLowerCase();
+      var hits = localData.filter(function (p) {
+        return (p.title || '').toLowerCase().indexOf(q) !== -1 ||
+          stripHtml(p.content || '').toLowerCase().indexOf(q) !== -1;
+      }).slice(0, 10);
+      render(hits, query);
+    }
+  }
+
+  var localData = null;
+  if (!useAlgolia) {
+    fetch(currentDir + 'search.json').then(function (res) {
+      return res.json();
+    }).then(function (data) {
+      localData = data;
+      var query = input.value.trim();
+      if (query) doSearch(query);
+    }).catch(function () {
+      results.innerHTML = '<p class="search-empty">搜索数据加载失败，请刷新重试。</p>';
     });
-  })();
+  }
+
+  if (useAlgolia) {
+    var client = algoliasearch(appId, searchKey);
+    var algoliaIndex = client.initIndex(indexName);
+  }
+
+  input.addEventListener('input', function () {
+    var query = input.value.trim();
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      doSearch(query);
+    }, 200);
+  });
+
+  /* 键盘操作：↑/↓ 选择结果，Enter 打开，Esc 清空 */
+  input.addEventListener('keydown', function (e) {
+    var first = results.querySelector('.search-result');
+    if (e.key === 'ArrowDown' && first) {
+      e.preventDefault();
+      first.focus();
+    } else if (e.key === 'Enter' && first) {
+      e.preventDefault();
+      first.click();
+    }
+  });
+
+  results.addEventListener('keydown', function (e) {
+    var items = Array.prototype.slice.call(results.querySelectorAll('.search-result'));
+    var idx = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      var next = items[Math.min(idx + 1, items.length - 1)];
+      next.focus();
+      next.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (idx <= 0) {
+        input.focus();
+      } else {
+        items[idx - 1].focus();
+      }
+    } else if (e.key === 'Escape') {
+      input.value = '';
+      results.innerHTML = '';
+      input.focus();
+    }
+  });
+})();
 </script>

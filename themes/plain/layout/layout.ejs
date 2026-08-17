@@ -4,14 +4,17 @@
   <%- partial('partial/head') %>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
   <header class="site-header">
     <%- partial('partial/header') %>
   </header>
-  <main class="site-main">
+  <main class="site-main" id="main-content">
     <%- body %>
   </main>
   <footer class="site-footer">
     <%- partial('partial/footer') %>
   </footer>
+  <button class="back-to-top" id="back-to-top" type="button" aria-label="回到顶部">↑</button>
+  <script src="<%- url_for('/js/main.js') %>"></script>
 </body>
 </html>
