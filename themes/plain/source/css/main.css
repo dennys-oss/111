@@ -39,9 +39,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121c2b;
+    --bg: #2b3c55;
     --bg-soft: #161b22;
-    --bg-glass: rgba(18, 28, 43, 0.86);
+    --bg-glass: rgba(43, 60, 85, 0.86);
     --fg: #e6edf3;
     --fg-strong: #f0f6fc;
     --muted: #8b949e;

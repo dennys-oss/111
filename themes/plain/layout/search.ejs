@@ -26,6 +26,7 @@ layout: layout
   var currentDir = (location.pathname || '/').replace(/[^/]+/?$/, '');
   var requestSeq = 0;
   var debounceTimer = null;
+  var resultCache = {};
 
   function stripHtml(html) {
     var div = document.createElement('div');
@@ -93,15 +94,27 @@ layout: layout
       results.innerHTML = '';
       return;
     }
+    if (query.length < 2) {
+      results.innerHTML = '<p class="search-empty">继续输入以搜索…</p>';
+      return;
+    }
+    if (resultCache[query]) {
+      render(resultCache[query], query);
+      return;
+    }
     results.innerHTML = '<p class="search-empty">搜索中…</p>';
 
     if (useAlgolia) {
       algoliaIndex.search(query, { hitsPerPage: 10 }).then(function (res) {
         if (seq !== requestSeq) return;
+        resultCache[query] = res.hits;
         render(res.hits, query);
-      }).catch(function () {
+      }).catch(function (err) {
         if (seq !== requestSeq) return;
-        results.innerHTML = '<p class="search-empty">搜索出错，请稍后再试。</p>';
+        var msg = (err && (err.status === 429 || err.statusCode === 429))
+          ? '搜索太频繁了，请稍等几秒再试。'
+          : '搜索出错，请稍后再试。';
+        results.innerHTML = '<p class="search-empty">' + msg + '</p>';
       });
     } else {
       if (!localData) {
@@ -140,7 +153,7 @@ layout: layout
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(function () {
       doSearch(query);
-    }, 200);
+    }, 500);
   });
 
   /* 键盘操作：↑/↓ 选择结果，Enter 打开，Esc 清空 */
