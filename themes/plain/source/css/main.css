@@ -21,8 +21,7 @@
   --mark-bg: #fde68a;
 
   /* 字体与排版 */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-sans: system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
 
@@ -42,7 +41,7 @@
     --bg: #2b3c55;
     --bg-soft: #161b22;
     --bg-glass: rgba(43, 60, 85, 0.86);
-    --fg: #e6edf3;
+    --fg: #1c2f40;
     --fg-strong: #f0f6fc;
     --muted: #8b949e;
     --accent: #2dd4bf;
